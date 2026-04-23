@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeautifyAI - AI Face Editor &amp; Photo Retouching</title>
+    <meta name="description" content="Retouch photos instantly with BeautifyAI. AI-powered tools that enhance skin, eyes, hair, and more — no experience needed.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="18" cy="18" r="18" fill="#5B2EFF"/>
+                        <path d="M10 18 Q18 8 26 18 Q18 28 10 18Z" fill="white" opacity="0.9"/>
+                        <circle cx="18" cy="18" r="4" fill="#FF6B6B"/>
+                    </svg>
+                    <span>beautify<b>AI</b></span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#features">Create</a></li>
+                    <li><a href="#about">Learn</a></li>
+                    <li><a href="#contact">Support</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <a href="#" class="btn-signin">Sign In</a>
+                    <a href="#" class="btn btn-get-started">Get Started</a>
+                </div>
+                <div class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <!-- Decorative blobs -->
+        <div class="blob blob-top-right"></div>
+        <div class="blob blob-bottom-left"></div>
+        <div class="dots dots-left"></div>
+        <div class="dots dots-right"></div>
+
+        <div class="hero-inner">
+            <!-- Left: Text + CTA -->
+            <div class="hero-text">
+                <p class="breadcrumb">Home &rsaquo; <span>Photo Editor</span> &rsaquo; Touch Up</p>
+                <h1 class="hero-title">
+                    Retouch Photos<br>
+                    Instantly With Our<br>
+                    <span class="hero-accent">Face Editor</span>
+                </h1>
+                <p class="hero-description">
+                    Look your best in every shot with AI-powered tools that enhance skin, eyes, hair, and more &mdash; no experience needed.
+                </p>
+                <div class="hero-upload-area">
+                    <label for="photoUpload" class="btn btn-upload" id="uploadBtn">
+                        <i class="fas fa-upload"></i> Upload Your Photo Now!
+                    </label>
+                    <input type="file" id="photoUpload" accept="image/*" style="display:none">
+                    <p class="drop-text">or drop a file</p>
+                </div>
+            </div>
+
+            <!-- Right: Before / After mockup -->
+            <div class="hero-mockup">
+                <div class="mockup-window">
+                    <div class="mockup-bar">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <div class="mockup-panels">
+                        <div class="panel panel-before">
+                            <div class="panel-face">
+                                <div class="face-silhouette">
+                                    <div class="face-head"></div>
+                                    <div class="face-features">
+                                        <div class="feature-eye eye-left"></div>
+                                        <div class="feature-eye eye-right"></div>
+                                        <div class="feature-nose"></div>
+                                        <div class="feature-mouth"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-label">Before</div>
+                        </div>
+                        <div class="panel panel-after">
+                            <div class="panel-face after-glow">
+                                <div class="face-silhouette enhanced">
+                                    <div class="face-head"></div>
+                                    <div class="face-features">
+                                        <div class="feature-eye eye-left glow"></div>
+                                        <div class="feature-eye eye-right glow"></div>
+                                        <div class="feature-nose"></div>
+                                        <div class="feature-mouth enhanced-mouth"></div>
+                                    </div>
+                                    <div class="sparkle s1">&#10022;</div>
+                                    <div class="sparkle s2">&#10022;</div>
+                                    <div class="sparkle s3">&#9733;</div>
+                                </div>
+                            </div>
+                            <div class="panel-label after-label">After ✨</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- AI-tool badges floating around -->
+                <div class="floating-badge badge-skin"><i class="fas fa-magic"></i> Skin Smooth</div>
+                <div class="floating-badge badge-eyes"><i class="fas fa-eye"></i> Eye Enhance</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Statement Section -->
+    <section id="about" class="problem-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Transforming <span class="highlight">Dermatological Care</span></h2>
+                <p>Addressing critical challenges in modern cosmetic dermatology</p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h3>Healthcare Gap</h3>
+                    <p>Dermatology services are often limited in underserved communities, creating accessibility barriers for patients seeking cosmetic treatments.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Diagnostic Accuracy</h3>
+                    <p>Traditional diagnosis methods can be time-consuming and subject to human error, affecting treatment outcomes.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Safety & Ethics</h3>
+                    <p>Implementation of AI in healthcare requires careful consideration of safety protocols and ethical guidelines.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Powerful <span class="highlight">AI Features</span></h2>
+                <p>Advanced capabilities powered by artificial intelligence</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <h3>Image Analysis</h3>
+                    <p>Advanced AI algorithms analyze skin conditions and facial features with medical-grade precision.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h3>Image Translation</h3>
+                    <p>State-of-the-art GAN technology transforms facial images while maintaining natural appearance.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Real-time Processing</h3>
+                    <p>Instant results with optimized algorithms for fast, efficient facial beautification.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3>Personalized Treatment</h3>
+                    <p>Tailored recommendations based on individual skin analysis and cosmetic understanding.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Stack Section -->
+    <section id="technology" class="tech-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Advanced <span class="highlight">Technology Stack</span></h2>
+                <p>Built with cutting-edge tools and frameworks</p>
+            </div>
+            <div class="tech-stack">
+                <div class="tech-category">
+                    <h3>AI & Machine Learning</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">
+                            <i class="fas fa-brain"></i>
+                            <span>Deep Learning</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>GANs Architecture</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-eye"></i>
+                            <span>Computer Vision</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <h3>Development</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">
+                            <i class="fab fa-python"></i>
+                            <span>Python</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-code"></i>
+                            <span>TensorFlow/PyTorch</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-database"></i>
+                            <span>OpenCV</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tech-category">
+                    <h3>Deployment</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">
+                            <i class="fas fa-cloud"></i>
+                            <span>Cloud Computing</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-server"></i>
+                            <span>API Integration</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>Web/Mobile</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-sparkles"></i>
+                    <span>BeautifyAI</span>
+                </div>
+                <div class="footer-info">
+                    <p>Revolutionizing cosmetic dermatology through artificial intelligence</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 BeautifyAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

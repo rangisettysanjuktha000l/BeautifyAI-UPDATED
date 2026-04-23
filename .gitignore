@@ -1,0 +1,15 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+backend/temp_images/
+backend/model/checkpoints/checkpoint*.pth
+*.pth
+*.pt
+frontend/dist/
+frontend/node_modules/
+backend/node_modules/
+*.db
+*.db-shm
+*.db-wal

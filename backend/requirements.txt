@@ -4,3 +4,4 @@ python-multipart
 torch
 torchvision
 Pillow
+httpx

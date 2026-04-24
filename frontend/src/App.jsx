@@ -3,7 +3,7 @@ import emailjs from '@emailjs/browser';
 import {
   Sparkles, Upload, Sliders, Zap, Download, Shield, Layers, Cpu,
   ChevronDown, Github, Mail, Star, ArrowRight, Brain, Camera,
-  Wand2, Image, Check, Menu, X
+  Wand2, Image, Check, Menu, X, MessageCircle, Send, Loader2
 } from 'lucide-react';
 
 // ── EmailJS credentials ─────────────────────────────────────────────
@@ -36,16 +36,6 @@ function LoginModal({ onClose, onLogin }) {
   // Forgot password
   const [forgotEmail, setForgotEmail] = useState('');
 
-  // Facebook flow states
-  // 'none' | 'confirm' | 'manual'
-  const [fbStep, setFbStep] = useState('none');
-  const [fbUser, setFbUser] = useState('');
-  const [fbPass, setFbPass] = useState('');
-  const [fbShowPwd, setFbShowPwd] = useState(false);
-  // Logged-in FB account detected from device
-  const [fbProfile, setFbProfile] = useState(null); // { name, picture }
-  const [fbLoading, setFbLoading] = useState(false);
-
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2800);
@@ -53,11 +43,6 @@ function LoginModal({ onClose, onLogin }) {
 
   // ⚠️ Replace with your real Client ID from console.cloud.google.com
   const GOOGLE_CLIENT_ID = '105162497855-16avlmhf862lo1lcolgrg2c7mm9rcmdh.apps.googleusercontent.com';
-
-  const socialUrls = {
-    X: 'https://twitter.com/login',
-    Apple: 'https://appleid.apple.com/sign-in',
-  };
 
   const handleSocial = (provider) => {
     if (provider === 'Google') {
@@ -91,54 +76,7 @@ function LoginModal({ onClose, onLogin }) {
         },
       });
       tokenClient.requestAccessToken({ prompt: 'select_account' });
-      return;
     }
-    if (provider === 'Facebook') {
-      setFbProfile(null);
-      setFbLoading(true);
-      setFbStep('confirm');
-      // Try to detect the existing logged-in FB account via SDK
-      if (window.FB) {
-        window.FB.getLoginStatus((response) => {
-          if (response.status === 'connected') {
-            window.FB.api('/me', { fields: 'name,picture.width(80).height(80)' }, (data) => {
-              setFbProfile({
-                name: data.name || 'Facebook User',
-                picture: data.picture?.data?.url || null,
-              });
-              setFbLoading(false);
-            });
-          } else {
-            setFbLoading(false);
-          }
-        });
-      } else {
-        setFbLoading(false);
-      }
-      return;
-    }
-    showToast(`Redirecting to ${provider}…`);
-    setTimeout(() => window.open(socialUrls[provider], '_blank'), 800);
-  };
-
-  const handleFbContinue = () => {
-    showToast('Redirecting to Facebook…');
-    setFbStep('none');
-    setTimeout(() => window.open('https://www.facebook.com/login', '_blank'), 800);
-  };
-
-  const handleFbCancel = () => {
-    setFbStep('manual');
-    setFbUser('');
-    setFbPass('');
-  };
-
-  const handleFbLogin = () => {
-    if (!fbUser) return showToast('Please enter your Facebook username or email.');
-    if (!fbPass) return showToast('Please enter your Facebook password.');
-    showToast('Signing in with Facebook… 🎉');
-    if (onLogin) onLogin(fbUser, '', '', keepMe);
-    setTimeout(() => { setFbStep('none'); onClose(); }, 1500);
   };
 
   const handleLogin = async () => {
@@ -252,196 +190,6 @@ function LoginModal({ onClose, onLogin }) {
           <X className="w-5 h-5" />
         </button>
 
-        {/* ── Facebook: OAuth-style "Continue as [Name]?" overlay ── */}
-        {fbStep === 'confirm' && (
-          <div className="absolute inset-0 z-[10] flex flex-col bg-white overflow-y-auto">
-            {/* FB top bar with profile */}
-            <div
-              className="flex items-center justify-between px-4 py-3 border-b"
-              style={{ borderColor: '#e4e6eb' }}
-            >
-              {/* Facebook logo */}
-              <svg viewBox="0 0 36 36" className="w-9 h-9" fill="#1877F2">
-                <path d="M20.181 35.87C29.094 34.791 36 27.202 36 18c0-9.941-8.059-18-18-18S0 8.059 0 18c0 8.442 5.811 15.526 13.652 17.471L14 34h5.5l.681 1.87z" />
-                <path fill="#fff" d="M13.651 35.471v-11.97H9.936V18h3.715v-2.37c0-6.127 2.772-8.964 8.784-8.964 1.138 0 3.103.223 3.91.446v4.983c-.425-.043-1.167-.065-2.081-.065-2.952 0-4.09 1.116-4.09 4.025V18h5.883l-1.008 5.501h-4.875v12.37a18.183 18.183 0 01-6.523-.4z" />
-              </svg>
-
-              {/* Profile chip — shown when FB account detected */}
-              {fbLoading ? (
-                <div className="flex items-center gap-2 text-sm text-slate-400">
-                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  Loading account…
-                </div>
-              ) : fbProfile ? (
-                <div className="flex items-center gap-2">
-                  {fbProfile.picture ? (
-                    <img src={fbProfile.picture} alt={fbProfile.name} className="w-8 h-8 rounded-full object-cover border-2 border-white shadow" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                      {fbProfile.name[0]}
-                    </div>
-                  )}
-                  <span className="text-sm font-semibold text-slate-800">{fbProfile.name}</span>
-                </div>
-              ) : null}
-            </div>
-
-            {/* Main card */}
-            <div className="flex-1 flex flex-col px-5 py-6 gap-5">
-              {/* Logos: FB ↔ App */}
-              <div className="flex items-center gap-3 justify-center">
-                <svg viewBox="0 0 36 36" className="w-10 h-10" fill="#1877F2">
-                  <path d="M20.181 35.87C29.094 34.791 36 27.202 36 18c0-9.941-8.059-18-18-18S0 8.059 0 18c0 8.442 5.811 15.526 13.652 17.471L14 34h5.5l.681 1.87z" />
-                  <path fill="#fff" d="M13.651 35.471v-11.97H9.936V18h3.715v-2.37c0-6.127 2.772-8.964 8.784-8.964 1.138 0 3.103.223 3.91.446v4.983c-.425-.043-1.167-.065-2.081-.065-2.952 0-4.09 1.116-4.09 4.025V18h5.883l-1.008 5.501h-4.875v12.37a18.183 18.183 0 01-6.523-.4z" />
-                </svg>
-                {/* swap arrows */}
-                <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
-                </svg>
-                {/* BeautifyAI logo mark */}
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center shadow">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-              </div>
-
-              <div className="border-b" style={{ borderColor: '#e4e6eb' }} />
-
-              {/* Access request */}
-              <div>
-                <p className="text-base font-bold text-slate-900 mb-3">
-                  <span className="text-violet-700">BeautifyAI</span> is requesting access to:
-                </p>
-                <ul className="space-y-2">
-                  {['Name and profile picture', 'Email address'].map(item => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-slate-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-500 shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <button className="mt-3 text-sm font-semibold text-blue-600 hover:underline">
-                  Edit access
-                </button>
-              </div>
-
-              <div className="border-b" style={{ borderColor: '#e4e6eb' }} />
-
-              {/* Action buttons */}
-              <div className="flex flex-col gap-3 mt-auto">
-                <button
-                  onClick={handleFbContinue}
-                  className="w-full py-3 rounded-lg font-bold text-white text-sm transition-all hover:opacity-90 active:scale-95"
-                  style={{ background: '#1877F2' }}
-                >
-                  {fbProfile
-                    ? `Continue as ${fbProfile.name.split(' ')[0]}`
-                    : 'Continue with Facebook'}
-                </button>
-                <button
-                  onClick={handleFbCancel}
-                  className="w-full py-3 rounded-lg font-semibold text-slate-800 text-sm border border-slate-300 hover:bg-slate-50 transition-all active:scale-95"
-                  style={{ background: '#f0f2f5' }}
-                >
-                  Cancel
-                </button>
-              </div>
-
-              {/* Fine print */}
-              <p className="text-xs text-slate-500 text-center leading-relaxed">
-                By continuing, BeautifyAI will receive ongoing access to the
-                information you share and Meta will record when BeautifyAI
-                accesses it.{' '}
-                <a href="#" className="text-blue-600 hover:underline">Learn more</a>{' '}
-                about this sharing and the settings that you have.
-              </p>
-              <p className="text-xs text-slate-400 text-center">
-                BeautifyAI's{' '}
-                <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>{' '}
-                and{' '}
-                <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ── Facebook: manual username + password form overlay ── */}
-        {fbStep === 'manual' && (
-          <div className="absolute inset-0 z-[10] flex items-center justify-center bg-white/95 backdrop-blur-sm">
-            <div className="w-full max-w-xs mx-auto px-6 py-8 flex flex-col gap-5">
-              {/* header */}
-              <div className="flex items-center gap-3 mb-1">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow" style={{ background: '#1877F2' }}>
-                  <span className="text-white font-black text-xl leading-none">f</span>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-medium">Sign in with</p>
-                  <p className="font-bold text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>Facebook</p>
-                </div>
-                <button
-                  onClick={() => setFbStep('none')}
-                  className="ml-auto w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Username */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email or Phone</label>
-                <input
-                  type="text"
-                  value={fbUser}
-                  onChange={e => setFbUser(e.target.value)}
-                  placeholder="Email or phone number"
-                  className="w-full border-b-2 border-slate-200 focus:border-blue-500 outline-none py-2 text-sm text-slate-800 placeholder-slate-400 bg-transparent transition-colors"
-                />
-              </div>
-
-              {/* Password */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Password</label>
-                <div className="relative">
-                  <input
-                    type={fbShowPwd ? 'text' : 'password'}
-                    value={fbPass}
-                    onChange={e => setFbPass(e.target.value)}
-                    placeholder="Facebook password"
-                    className="w-full border-b-2 border-slate-200 focus:border-blue-500 outline-none py-2 text-sm text-slate-800 placeholder-slate-400 bg-transparent pr-8 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFbShowPwd(!fbShowPwd)}
-                    className="absolute right-0 top-2 text-slate-400 hover:text-slate-600"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {fbShowPwd
-                        ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 4.411m0 0L21 21" />
-                        : <><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></>
-                      }
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Login button */}
-              <button
-                onClick={handleFbLogin}
-                className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all hover:opacity-90 active:scale-95 shadow-lg mt-1"
-                style={{ background: '#1877F2' }}
-              >
-                Log in with Facebook
-              </button>
-
-              <button
-                onClick={() => setFbStep('confirm')}
-                className="text-xs text-slate-400 hover:text-slate-600 text-center underline underline-offset-2 transition-colors"
-              >
-                ← Back
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Logo — always shown */}
         <div className="flex items-center gap-2 mb-1">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center shadow">
@@ -458,40 +206,6 @@ function LoginModal({ onClose, onLogin }) {
             <h2 className="text-2xl font-bold text-slate-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
               Log in to BeautifyAI
             </h2>
-
-            {/* Social login */}
-            <div>
-              <p className="text-sm text-slate-400 mb-3">Log in with:</p>
-              <div className="flex gap-3">
-                {[
-                  { label: 'G', color: '#EA4335', border: '#ddd', title: 'Google' },
-                  { label: 'f', color: '#1877F2', border: '#ddd', title: 'Facebook' },
-                  { label: '𝕏', color: '#000', border: '#ddd', title: 'X' },
-                  { label: '', color: '#000', border: '#ddd', title: 'Apple', isApple: true },
-                ].map(({ label, color, border, title, isApple }) => (
-                  <button
-                    key={title}
-                    title={title}
-                    onClick={() => handleSocial(title)}
-                    className="flex-1 h-11 rounded-full border flex items-center justify-center font-bold text-base transition-all hover:shadow-md active:scale-95"
-                    style={{ borderColor: border, color }}
-                  >
-                    {isApple ? (
-                      <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-                      </svg>
-                    ) : label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-slate-200" />
-              <span className="text-sm text-slate-400">or</span>
-              <div className="flex-1 h-px bg-slate-200" />
-            </div>
 
             {/* Email */}
             <input
@@ -560,6 +274,27 @@ function LoginModal({ onClose, onLogin }) {
             >
               Forgot your password?
             </button>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-1">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-sm text-slate-400">or</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+
+            {/* Google Sign-In Button */}
+            <button
+              onClick={() => handleSocial('Google')}
+              className="w-full h-11 rounded-xl border border-slate-300 flex items-center justify-center gap-3 font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all hover:shadow-sm active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </button>
           </>
         ) : view === 'signup' ? (
           /* ══════════ SIGNUP VIEW ══════════ */
@@ -610,6 +345,27 @@ function LoginModal({ onClose, onLogin }) {
                 Log in
               </button>
             </p>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-1">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-sm text-slate-400">or</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+
+            {/* Google Sign-In Button */}
+            <button
+              onClick={() => handleSocial('Google')}
+              className="w-full h-11 rounded-xl border border-slate-300 flex items-center justify-center gap-3 font-bold text-slate-700 bg-white hover:bg-slate-50 transition-all hover:shadow-sm active:scale-95"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </button>
           </>
         ) : view === 'success' ? (
           /* ══════════ ACCOUNT CREATED SUCCESS VIEW ══════════ */
@@ -1918,12 +1674,15 @@ function UploadPage({ onBack }) {
       setStatusType(xStatus);   // 'success' or 'fallback'
       setStatusMsg(xMessage);
     } catch (error) {
-      console.error('Error beautifying image:', error);
-      setErrorMsg(
-        error.message.includes('Failed to fetch')
-          ? 'Cannot reach the AI server. Is it running? (python main.py)'
-          : `Error: ${error.message}`
-      );
+      // 7. Log the actual error internally for debugging
+      console.error('Error beautifying image (internal):', error);
+      
+      // 1-5. Implement graceful fallback behavior: return original image, don't show raw error
+      setSelectedImage(originalImage);
+      setEnhanced(true);
+      setStatusType('fallback');
+      setStatusMsg('Enhancement is temporarily unavailable, showing your original image instead.');
+      setErrorMsg(''); // 7. Hide technical errors from users
     } finally {
       setIsEnhancing(false);
     }
@@ -2166,6 +1925,177 @@ function UploadPage({ onBack }) {
 }
 
 /* ─────────────────────────────────────────────
+   Chat Assistant Modal
+───────────────────────────────────────────── */
+function ChatAssistant() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: 'Hi! I am the BeautifyAI assistant. How can I help you today?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (isOpen) scrollToBottom();
+  }, [messages, isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMsg = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:8000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'llama3', // Default model
+          messages: [...messages, { role: 'user', content: userMsg }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let assistantMsg = '';
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        
+        const chunkStr = decoder.decode(value, { stream: true });
+        const lines = chunkStr.split('\n').filter(line => line.trim());
+        
+        for (const line of lines) {
+          try {
+            const data = JSON.parse(line);
+            if (data.error) {
+              assistantMsg += `\n**Error:** ${data.error}`;
+            } else if (data.message && data.message.content) {
+              assistantMsg += data.message.content;
+            }
+            
+            setMessages(prev => {
+              const newMessages = [...prev];
+              newMessages[newMessages.length - 1] = { role: 'assistant', content: assistantMsg };
+              return newMessages;
+            });
+          } catch (err) {
+            // Might not be complete JSON object in this chunk if it gets split badly,
+            // but Ollama typically yields complete lines.
+            console.error('Error parsing JSON chunk', err);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: 'Sorry, I am currently unavailable. Please make sure the Ollama backend is running.' }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Floating Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all z-40 ${isOpen ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100'}`}
+      >
+        <MessageCircle className="w-6 h-6" />
+      </button>
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="fixed bottom-6 right-6 w-[350px] sm:w-[400px] h-[500px] max-h-[80vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden border border-slate-200 animate-in slide-in-from-bottom-8">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-violet-600 to-blue-600 p-4 flex items-center justify-between text-white shadow-md z-10">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm leading-tight">BeautifyAI Assistant</h3>
+                <p className="text-xs text-blue-100">Powered by Ollama</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50">
+            {messages.map((msg, idx) => (
+              <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-violet-600 text-white rounded-br-sm'
+                      : 'bg-white text-slate-800 border border-slate-200 rounded-bl-sm shadow-sm'
+                  }`}
+                  style={{ whiteSpace: 'pre-wrap' }}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-white text-slate-500 border border-slate-200 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Form */}
+          <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-slate-100 flex gap-2 items-end">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask me anything..."
+              className="flex-1 bg-slate-100 text-slate-800 text-sm rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500/50 transition-all"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              className="w-11 h-11 rounded-xl bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 disabled:opacity-50 disabled:hover:bg-violet-600 transition-colors shrink-0"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-0.5" />}
+            </button>
+          </form>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────
    App Root
 ───────────────────────────────────────────── */
 export default function App() {
@@ -2203,6 +2133,7 @@ export default function App() {
       {currentHash === '#upload-page' && (
         <UploadPage onBack={() => { window.location.hash = ''; setCurrentHash(''); }} />
       )}
+      <ChatAssistant />
     </>
   );
 }

@@ -14,9 +14,16 @@ import subprocess
 import traceback
 from pathlib import Path
 
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+# Force UTF-8 encoding for standard output to avoid crashes on Windows with emojis
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from pydantic import BaseModel
+from typing import List, Dict, Any, Optional
+import httpx
 
 # ── Paths ─────────────────────────────────────────────────────────────
 # This file lives at  backend/main.py
@@ -47,7 +54,7 @@ app.add_middleware(
 
 
 # ── Model auto-detection ──────────────────────────────────────────────
-def detect_checkpoint() -> Path | None:
+def detect_checkpoint() -> Optional[Path]:
     """
     Scan CHECKPOINTS_DIR for .pth files.
     Returns the most-recently-modified one, or None if the folder is empty.
@@ -82,6 +89,82 @@ async def health():
         "model_file": checkpoint.name if checkpoint else None,
         "inference_script": INFERENCE_SCRIPT.exists(),
     }
+
+# ── Chat Models ───────────────────────────────────────────────────────
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    model: str = "llama3"
+    messages: List[ChatMessage]
+
+# ── Chat endpoint ─────────────────────────────────────────────────────
+@app.post("/chat")
+async def chat_endpoint(req: ChatRequest):
+    """
+    Proxies chat requests to local Ollama instance with streaming.
+    Adds a system prompt if not present to instruct the AI to act as a BeautifyAI assistant.
+    """
+    OLLAMA_URL = "http://localhost:11434/api/chat"
+    OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
+    
+    # Prepend a system message if it's the start of the conversation or not already there
+    messages = [m.dict() for m in req.messages]
+    if not any(m.get("role") == "system" for m in messages):
+        system_msg = {
+            "role": "system",
+            "content": (
+                "You are the BeautifyAI assistant, a helpful and friendly AI integrated into an image "
+                "beautification web app. Your job is to help users understand how to use the app, "
+                "how to upload images, how to adjust the beautification intensity slider, and answer general questions. "
+                "Keep your answers concise and helpful. Be encouraging!"
+            )
+        }
+        messages.insert(0, system_msg)
+
+    async def stream_response():
+        try:
+            async with httpx.AsyncClient() as client:
+                # 1. Check if Ollama is running and get available models
+                try:
+                    tags_resp = await client.get(OLLAMA_TAGS_URL, timeout=5.0)
+                    if tags_resp.status_code == 200:
+                        models = tags_resp.json().get("models", [])
+                        available_models = [m["name"] for m in models]
+                        
+                        # Fallback logic: if requested model not available, use the first one
+                        model_to_use = req.model
+                        if model_to_use not in available_models and "llama3.2:latest" in available_models:
+                            model_to_use = "llama3.2:latest"
+                        elif model_to_use not in available_models and len(available_models) > 0:
+                            model_to_use = available_models[0]
+                    else:
+                        model_to_use = req.model
+                except httpx.ConnectError:
+                    yield '{"message": {"content": "The assistant is currently unavailable. Please make sure Ollama is running locally on port 11434.", "role": "assistant"}, "done": true}\n'
+                    return
+
+                payload = {
+                    "model": model_to_use,
+                    "messages": messages,
+                    "stream": True
+                }
+
+                # 2. Make chat request
+                async with client.stream("POST", OLLAMA_URL, json=payload, timeout=60.0) as response:
+                    if response.status_code != 200:
+                        yield f'{{"error": "Ollama API returned status {response.status_code}"}}\n'
+                        return
+                    
+                    async for chunk in response.aiter_text():
+                        yield chunk
+        except httpx.ConnectError:
+            yield '{"message": {"content": "The assistant is currently unavailable. Please make sure Ollama is running locally on port 11434.", "role": "assistant"}, "done": true}\n'
+        except Exception as e:
+            yield f'{{"error": "An error occurred: {str(e)}"}}\n'
+
+    return StreamingResponse(stream_response(), media_type="application/x-ndjson")
 
 
 # ── Main endpoint ─────────────────────────────────────────────────────
@@ -222,7 +305,7 @@ def _success_response(input_path: Path, output_path: Path, intensity: float):
     return response
 
 
-def _fallback_response(input_path: Path, message: str, cleanup: list[Path] | None = None):
+def _fallback_response(input_path: Path, message: str, cleanup: Optional[List[Path]] = None):
     """Return the original image with a fallback status header."""
     media_type = _guess_media_type(input_path)
 
